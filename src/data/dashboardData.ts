@@ -1,4 +1,3 @@
-
 import { Transaction } from "@/components/RecentTransactions";
 import { SavingsGoal } from "@/components/SavingsGoals";
 import { SpendingCategory } from "@/components/SpendingByCategory";
@@ -52,7 +51,8 @@ export const recentTransactionsData: Transaction[] = [
     amount: 120.50,
     date: 'Today, 2:30 PM',
     type: 'expense',
-    category: 'food'
+    category: 'food',
+    timestamp: Date.now() - 1000 * 60 * 60 * 2 // 2 hours ago
   },
   {
     id: '2',
@@ -60,7 +60,8 @@ export const recentTransactionsData: Transaction[] = [
     amount: 5200.00,
     date: 'Yesterday, 9:15 AM',
     type: 'income',
-    category: 'income'
+    category: 'income',
+    timestamp: Date.now() - 1000 * 60 * 60 * 24 // 1 day ago
   },
   {
     id: '3',
@@ -68,7 +69,8 @@ export const recentTransactionsData: Transaction[] = [
     amount: 85.75,
     date: 'Mar 25, 7:45 PM',
     type: 'expense',
-    category: 'food'
+    category: 'food',
+    timestamp: Date.now() - 1000 * 60 * 60 * 48 // 2 days ago
   },
   {
     id: '4',
@@ -76,7 +78,8 @@ export const recentTransactionsData: Transaction[] = [
     amount: 49.99,
     date: 'Mar 23, 11:30 AM',
     type: 'expense',
-    category: 'shopping'
+    category: 'shopping',
+    timestamp: Date.now() - 1000 * 60 * 60 * 72 // 3 days ago
   },
   {
     id: '5',
@@ -84,7 +87,8 @@ export const recentTransactionsData: Transaction[] = [
     amount: 750.00,
     date: 'Mar 22, 3:20 PM',
     type: 'income',
-    category: 'income'
+    category: 'income',
+    timestamp: Date.now() - 1000 * 60 * 60 * 96 // 4 days ago
   }
 ];
 

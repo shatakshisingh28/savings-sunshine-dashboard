@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import Layout from '@/components/Layout';
 import MetricCard from '@/components/MetricCard';
@@ -70,7 +69,8 @@ const Index = () => {
       amount: expense.amount,
       date: expense.date,
       type: 'expense',
-      category: expense.category
+      category: expense.category,
+      timestamp: Date.now() // Add current timestamp
     };
 
     // Update transactions list
@@ -140,7 +140,8 @@ const Index = () => {
       amount: income.amount,
       date: income.date,
       type: 'income',
-      category: income.source
+      category: income.source,
+      timestamp: Date.now() // Add current timestamp
     };
 
     // Update transactions list
