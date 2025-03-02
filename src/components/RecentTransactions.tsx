@@ -1,6 +1,7 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowDownLeft, ArrowUpRight, Coffee, CreditCard, ShoppingBag, Utensils } from 'lucide-react';
+import { ArrowDownLeft, ArrowUpRight, Coffee, CreditCard, ShoppingBag, Utensils, Smartphone } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -12,6 +13,11 @@ export interface Transaction {
   type: 'expense' | 'income';
   category: string;
   timestamp?: number; // Unix timestamp for real-time display
+  upiDetails?: {
+    upiId: string;
+    transactionId: string;
+    status: 'completed' | 'pending' | 'failed';
+  }
 }
 
 interface RecentTransactionsProps {
@@ -22,6 +28,7 @@ const categoryIcons: Record<string, React.ReactNode> = {
   food: <Utensils className="h-4 w-4" />,
   shopping: <ShoppingBag className="h-4 w-4" />,
   coffee: <Coffee className="h-4 w-4" />,
+  upi: <Smartphone className="h-4 w-4" />,
   default: <CreditCard className="h-4 w-4" />
 };
 
@@ -93,6 +100,9 @@ const RecentTransactions: React.FC<RecentTransactionsProps> = ({ transactions })
                       {transaction.timestamp && Date.now() - transaction.timestamp < 300000 && (
                         <span className="ml-2 text-xs px-1.5 py-0.5 bg-green-100 text-green-800 rounded-full animate-pulse">New</span>
                       )}
+                      {transaction.upiDetails && (
+                        <span className="ml-2 text-xs px-1.5 py-0.5 bg-blue-100 text-blue-800 rounded-full">UPI</span>
+                      )}
                     </p>
                     <p className="text-xs text-muted-foreground flex items-center">
                       {formatTransactionTime(transaction.date, transaction.timestamp)}
@@ -102,6 +112,18 @@ const RecentTransactions: React.FC<RecentTransactionsProps> = ({ transactions })
                         <span className="ml-1 capitalize">{transaction.category}</span>
                       </span>
                     </p>
+                    {transaction.upiDetails && (
+                      <p className="text-xs text-muted-foreground mt-1">
+                        UPI ID: {transaction.upiDetails.upiId}
+                        <span className="mx-1.5 h-1 w-1 rounded-full bg-muted-foreground/30"></span>
+                        <span className={cn(
+                          transaction.upiDetails.status === 'completed' ? "text-green-600" : 
+                          transaction.upiDetails.status === 'pending' ? "text-amber-600" : "text-red-600"
+                        )}>
+                          {transaction.upiDetails.status.charAt(0).toUpperCase() + transaction.upiDetails.status.slice(1)}
+                        </span>
+                      </p>
+                    )}
                   </div>
                 </div>
                 <div className="flex items-center">

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import Layout from '@/components/Layout';
 import MetricCard from '@/components/MetricCard';
@@ -7,6 +8,7 @@ import SavingsGoals from '@/components/SavingsGoals';
 import RecentTransactions from '@/components/RecentTransactions';
 import ExpenseForm from '@/components/ExpenseForm';
 import IncomeForm from '@/components/IncomeForm';
+import UpiTransactionForm from '@/components/UpiTransactionForm';
 import BudgetPlanner from '@/components/BudgetPlanner';
 import AddSavingsGoal from '@/components/AddSavingsGoal';
 import UpdateSavingsProgress from '@/components/UpdateSavingsProgress';
@@ -19,7 +21,8 @@ import {
   Wallet,
   Plus,
   Minus,
-  LineChart
+  LineChart,
+  Smartphone
 } from 'lucide-react';
 
 import { 
@@ -53,6 +56,7 @@ const Index = () => {
   // Show forms state
   const [showExpenseForm, setShowExpenseForm] = useState(false);
   const [showIncomeForm, setShowIncomeForm] = useState(false);
+  const [showUpiForm, setShowUpiForm] = useState(false);
   const [showAddGoalForm, setShowAddGoalForm] = useState(false);
 
   // Function to add a new expense
@@ -155,6 +159,69 @@ const Index = () => {
 
     // Hide form after submission
     setShowIncomeForm(false);
+  };
+
+  // Function to add a new UPI transaction
+  const handleAddUpiTransaction = (upiTransaction: {
+    title: string;
+    amount: number;
+    upiId: string;
+    transactionId: string;
+    type: 'expense' | 'income';
+  }) => {
+    // Create transaction object
+    const newTransaction: Transaction = {
+      id: Date.now().toString(),
+      title: upiTransaction.title,
+      amount: upiTransaction.amount,
+      date: new Date().toLocaleString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: 'numeric',
+        hour12: true
+      }),
+      type: upiTransaction.type,
+      category: 'upi',
+      timestamp: Date.now(), // Add current timestamp
+      upiDetails: {
+        upiId: upiTransaction.upiId,
+        transactionId: upiTransaction.transactionId,
+        status: 'completed'
+      }
+    };
+
+    // Update transactions list
+    setTransactions(prev => [newTransaction, ...prev]);
+    
+    // Update totals based on transaction type
+    if (upiTransaction.type === 'expense') {
+      setTotalExpenses(prev => prev + upiTransaction.amount);
+      setTotalBalance(prev => prev - upiTransaction.amount);
+      
+      // Update UPI Payments category in spending categories
+      const categoryIndex = spendingCategories.findIndex(cat => cat.name === 'UPI Payments');
+      if (categoryIndex !== -1) {
+        const updatedCategories = [...spendingCategories];
+        updatedCategories[categoryIndex].value += upiTransaction.amount;
+        setSpendingCategories(updatedCategories);
+      }
+    } else {
+      setTotalIncome(prev => prev + upiTransaction.amount);
+      setTotalBalance(prev => prev + upiTransaction.amount);
+    }
+
+    // Show success notification
+    toast({
+      title: "UPI Transaction Processed",
+      description: `${upiTransaction.type === 'expense' ? 'Paid' : 'Received'} ${upiTransaction.amount.toLocaleString('en-US', {
+        style: 'currency',
+        currency: 'USD'
+      })} ${upiTransaction.type === 'expense' ? 'to' : 'from'} ${upiTransaction.upiId}`,
+    });
+
+    // Hide form after submission
+    setShowUpiForm(false);
   };
 
   // Function to add a new budget
@@ -282,6 +349,13 @@ const Index = () => {
             {showIncomeForm ? "Hide Income Form" : "Add Income"}
           </Button>
           <Button 
+            onClick={() => setShowUpiForm(!showUpiForm)} 
+            variant={showUpiForm ? "default" : "outline"}
+            className="bg-blue-600 hover:bg-blue-700 text-white">
+            <Smartphone className="mr-2 h-4 w-4" /> 
+            {showUpiForm ? "Hide UPI Form" : "UPI Transaction"}
+          </Button>
+          <Button 
             onClick={() => setShowAddGoalForm(!showAddGoalForm)} 
             variant={showAddGoalForm ? "default" : "outline"}>
             <PiggyBank className="mr-2 h-4 w-4" /> 
@@ -296,6 +370,9 @@ const Index = () => {
           )}
           {showIncomeForm && (
             <IncomeForm onAddIncome={handleAddIncome} />
+          )}
+          {showUpiForm && (
+            <UpiTransactionForm onAddUpiTransaction={handleAddUpiTransaction} />
           )}
           {showAddGoalForm && (
             <AddSavingsGoal onAddGoal={handleAddSavingsGoal} />

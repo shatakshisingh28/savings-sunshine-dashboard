@@ -1,3 +1,4 @@
+
 import { Transaction } from "@/components/RecentTransactions";
 import { SavingsGoal } from "@/components/SavingsGoals";
 import { SpendingCategory } from "@/components/SpendingByCategory";
@@ -17,6 +18,7 @@ export const spendingCategoriesData: SpendingCategory[] = [
   { name: 'Food', value: 800, color: '#0EA5E9' },
   { name: 'Transport', value: 400, color: '#6554C0' },
   { name: 'Shopping', value: 600, color: '#00C781' },
+  { name: 'UPI Payments', value: 350, color: '#6366F1' },
   { name: 'Others', value: 200, color: '#94A3B8' }
 ];
 
@@ -45,23 +47,67 @@ export const savingsGoalsData: SavingsGoal[] = [
 ];
 
 export const recentTransactionsData: Transaction[] = [
+  // UPI Transaction examples
+  {
+    id: 'upi1',
+    title: 'Grocery Store Payment',
+    amount: 87.50,
+    date: 'Today, 1:45 PM',
+    type: 'expense',
+    category: 'upi',
+    timestamp: Date.now() - 1000 * 60 * 45, // 45 minutes ago
+    upiDetails: {
+      upiId: 'grocerystore@upi',
+      transactionId: 'UPI12345678',
+      status: 'completed'
+    }
+  },
+  {
+    id: 'upi2',
+    title: 'Rent Payment',
+    amount: 850.00,
+    date: 'Today, 10:30 AM',
+    type: 'expense',
+    category: 'upi',
+    timestamp: Date.now() - 1000 * 60 * 180, // 3 hours ago
+    upiDetails: {
+      upiId: 'landlord@upi',
+      transactionId: 'UPI87654321',
+      status: 'completed'
+    }
+  },
+  {
+    id: 'upi3',
+    title: 'Friend Payment',
+    amount: 25.75,
+    date: 'Yesterday, 5:20 PM',
+    type: 'income',
+    category: 'upi',
+    timestamp: Date.now() - 1000 * 60 * 60 * 28, // 28 hours ago
+    upiDetails: {
+      upiId: 'friend@upi',
+      transactionId: 'UPI23456789',
+      status: 'completed'
+    }
+  },
+  // Regular transactions
   {
     id: '1',
     title: 'Grocery Shopping',
     amount: 120.50,
-    date: 'Today, 2:30 PM',
+    date: 'Yesterday, 2:30 PM',
     type: 'expense',
     category: 'food',
-    timestamp: Date.now() - 1000 * 60 * 60 * 2 // 2 hours ago
+    timestamp: Date.now() - 1000 * 60 * 60 * 26 // 26 hours ago
   },
   {
     id: '2',
     title: 'Salary Deposit',
     amount: 5200.00,
-    date: 'Yesterday, 9:15 AM',
+    date: '2 days ago, 9:15 AM',
     type: 'income',
     category: 'income',
-    timestamp: Date.now() - 1000 * 60 * 60 * 24 // 1 day ago
+    timestamp: Date.now() - 1000 * 60 * 60 * 48 // 2 days ago
   },
   {
     id: '3',
@@ -70,7 +116,7 @@ export const recentTransactionsData: Transaction[] = [
     date: 'Mar 25, 7:45 PM',
     type: 'expense',
     category: 'food',
-    timestamp: Date.now() - 1000 * 60 * 60 * 48 // 2 days ago
+    timestamp: Date.now() - 1000 * 60 * 60 * 72 // 3 days ago
   },
   {
     id: '4',
@@ -79,7 +125,7 @@ export const recentTransactionsData: Transaction[] = [
     date: 'Mar 23, 11:30 AM',
     type: 'expense',
     category: 'shopping',
-    timestamp: Date.now() - 1000 * 60 * 60 * 72 // 3 days ago
+    timestamp: Date.now() - 1000 * 60 * 60 * 96 // 4 days ago
   },
   {
     id: '5',
@@ -88,7 +134,7 @@ export const recentTransactionsData: Transaction[] = [
     date: 'Mar 22, 3:20 PM',
     type: 'income',
     category: 'income',
-    timestamp: Date.now() - 1000 * 60 * 60 * 96 // 4 days ago
+    timestamp: Date.now() - 1000 * 60 * 60 * 120 // 5 days ago
   }
 ];
 
