@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import Layout from '@/components/Layout';
 import MetricCard from '@/components/MetricCard';
@@ -20,7 +19,8 @@ import {
   PenLine,
   Edit,
   BarChart2,
-  LineChart
+  LineChart,
+  Trash
 } from 'lucide-react';
 
 import { 
@@ -33,6 +33,10 @@ import {
   totalIncome as initialTotalIncome,
   totalSavings as initialTotalSavings
 } from '@/data/dashboardData';
+
+import { SpendingCategory } from '@/components/SpendingByCategory';
+import { SavingsGoal } from '@/components/SavingsGoals';
+import { Transaction } from '@/components/RecentTransactions';
 
 const Index = () => {
   // State for all the data
@@ -53,6 +57,12 @@ const Index = () => {
   const [showSavingsDialog, setShowSavingsDialog] = useState(false);
   const [showChartDialog, setShowChartDialog] = useState(false);
   const [showCategoryDialog, setShowCategoryDialog] = useState(false);
+  
+  // New dialog states for savings goals and transactions
+  const [showSavingsGoalDialog, setShowSavingsGoalDialog] = useState(false);
+  const [showTransactionDialog, setShowTransactionDialog] = useState(false);
+  const [editingSavingsGoal, setEditingSavingsGoal] = useState<SavingsGoal | null>(null);
+  const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
 
   // Input states
   const [newBalance, setNewBalance] = useState('');
@@ -64,6 +74,18 @@ const Index = () => {
   const [newMonthExpenses, setNewMonthExpenses] = useState('');
   const [editingCategory, setEditingCategory] = useState<SpendingCategory | null>(null);
   const [newCategoryValue, setNewCategoryValue] = useState('');
+  
+  // New input states for savings goals
+  const [goalName, setGoalName] = useState('');
+  const [goalCurrent, setGoalCurrent] = useState('');
+  const [goalTarget, setGoalTarget] = useState('');
+  const [goalDueDate, setGoalDueDate] = useState('');
+  
+  // New input states for transactions
+  const [transactionTitle, setTransactionTitle] = useState('');
+  const [transactionAmount, setTransactionAmount] = useState('');
+  const [transactionType, setTransactionType] = useState<'income' | 'expense'>('expense');
+  const [transactionCategory, setTransactionCategory] = useState('');
 
   // Helper function to validate number input
   const validateAmount = (value: string): number | null => {
@@ -212,6 +234,179 @@ const Index = () => {
     setEditingCategory(category);
     setNewCategoryValue(category.value.toString());
     setShowCategoryDialog(true);
+  };
+  
+  // New functions for savings goals
+  const handleAddSavingsGoal = () => {
+    setEditingSavingsGoal(null);
+    setGoalName('');
+    setGoalCurrent('');
+    setGoalTarget('');
+    setGoalDueDate('');
+    setShowSavingsGoalDialog(true);
+  };
+  
+  const handleEditSavingsGoal = (goal: SavingsGoal) => {
+    setEditingSavingsGoal(goal);
+    setGoalName(goal.name);
+    setGoalCurrent(goal.current.toString());
+    setGoalTarget(goal.target.toString());
+    setGoalDueDate(goal.dueDate);
+    setShowSavingsGoalDialog(true);
+  };
+  
+  const handleDeleteSavingsGoal = (goalId: string) => {
+    setSavingsGoals(savingsGoals.filter(goal => goal.id !== goalId));
+    toast({
+      title: "Savings Goal Deleted",
+      description: "The savings goal has been removed",
+    });
+  };
+  
+  const handleSaveSavingsGoal = () => {
+    const current = validateAmount(goalCurrent);
+    const target = validateAmount(goalTarget);
+    
+    if (!goalName.trim()) {
+      toast({
+        title: "Missing Information",
+        description: "Please enter a name for the savings goal",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (current === null || target === null) {
+      return;
+    }
+    
+    if (!goalDueDate.trim()) {
+      toast({
+        title: "Missing Information",
+        description: "Please enter a due date for the savings goal",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (editingSavingsGoal) {
+      // Update existing goal
+      setSavingsGoals(savingsGoals.map(goal => 
+        goal.id === editingSavingsGoal.id 
+          ? { ...goal, name: goalName, current, target, dueDate: goalDueDate }
+          : goal
+      ));
+      toast({
+        title: "Savings Goal Updated",
+        description: `"${goalName}" has been updated`,
+      });
+    } else {
+      // Add new goal
+      const newGoal: SavingsGoal = {
+        id: Date.now().toString(),
+        name: goalName,
+        current,
+        target,
+        dueDate: goalDueDate
+      };
+      setSavingsGoals([...savingsGoals, newGoal]);
+      toast({
+        title: "Savings Goal Added",
+        description: `"${goalName}" has been added to your savings goals`,
+      });
+    }
+    
+    setShowSavingsGoalDialog(false);
+  };
+  
+  // New functions for transactions
+  const handleAddTransaction = () => {
+    setEditingTransaction(null);
+    setTransactionTitle('');
+    setTransactionAmount('');
+    setTransactionType('expense');
+    setTransactionCategory('');
+    setShowTransactionDialog(true);
+  };
+  
+  const handleEditTransaction = (transaction: Transaction) => {
+    setEditingTransaction(transaction);
+    setTransactionTitle(transaction.title);
+    setTransactionAmount(transaction.amount.toString());
+    setTransactionType(transaction.type);
+    setTransactionCategory(transaction.category);
+    setShowTransactionDialog(true);
+  };
+  
+  const handleDeleteTransaction = (transactionId: string) => {
+    setTransactions(transactions.filter(transaction => transaction.id !== transactionId));
+    toast({
+      title: "Transaction Deleted",
+      description: "The transaction has been removed",
+    });
+  };
+  
+  const handleSaveTransaction = () => {
+    const amount = validateAmount(transactionAmount);
+    
+    if (!transactionTitle.trim()) {
+      toast({
+        title: "Missing Information",
+        description: "Please enter a title for the transaction",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (amount === null) {
+      return;
+    }
+    
+    if (!transactionCategory.trim()) {
+      toast({
+        title: "Missing Information",
+        description: "Please enter a category for the transaction",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (editingTransaction) {
+      // Update existing transaction
+      setTransactions(transactions.map(transaction => 
+        transaction.id === editingTransaction.id 
+          ? { 
+              ...transaction, 
+              title: transactionTitle, 
+              amount, 
+              type: transactionType, 
+              category: transactionCategory 
+            }
+          : transaction
+      ));
+      toast({
+        title: "Transaction Updated",
+        description: `"${transactionTitle}" has been updated`,
+      });
+    } else {
+      // Add new transaction
+      const newTransaction: Transaction = {
+        id: Date.now().toString(),
+        title: transactionTitle,
+        amount,
+        date: "Today",
+        type: transactionType,
+        category: transactionCategory,
+        timestamp: Date.now()
+      };
+      setTransactions([newTransaction, ...transactions]);
+      toast({
+        title: "Transaction Added",
+        description: `"${transactionTitle}" has been added to your transactions`,
+      });
+    }
+    
+    setShowTransactionDialog(false);
   };
 
   return (
@@ -497,6 +692,159 @@ const Index = () => {
           </DialogContent>
         </Dialog>
         
+        {/* Savings Goal Dialog */}
+        <Dialog open={showSavingsGoalDialog} onOpenChange={setShowSavingsGoalDialog}>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>
+                {editingSavingsGoal ? "Edit Savings Goal" : "Add New Savings Goal"}
+              </DialogTitle>
+            </DialogHeader>
+            <div className="py-4 space-y-4">
+              <div>
+                <label htmlFor="goalName" className="text-sm font-medium block mb-2">
+                  Goal Name
+                </label>
+                <Input
+                  id="goalName"
+                  value={goalName}
+                  onChange={(e) => setGoalName(e.target.value)}
+                  placeholder="e.g. Emergency Fund"
+                />
+              </div>
+              <div>
+                <label htmlFor="goalCurrent" className="text-sm font-medium block mb-2">
+                  Current Amount ($)
+                </label>
+                <Input
+                  id="goalCurrent"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={goalCurrent}
+                  onChange={(e) => setGoalCurrent(e.target.value)}
+                  placeholder="0.00"
+                />
+              </div>
+              <div>
+                <label htmlFor="goalTarget" className="text-sm font-medium block mb-2">
+                  Target Amount ($)
+                </label>
+                <Input
+                  id="goalTarget"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={goalTarget}
+                  onChange={(e) => setGoalTarget(e.target.value)}
+                  placeholder="0.00"
+                />
+              </div>
+              <div>
+                <label htmlFor="goalDueDate" className="text-sm font-medium block mb-2">
+                  Due Date
+                </label>
+                <Input
+                  id="goalDueDate"
+                  value={goalDueDate}
+                  onChange={(e) => setGoalDueDate(e.target.value)}
+                  placeholder="e.g. Dec 2023"
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowSavingsGoalDialog(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleSaveSavingsGoal}>
+                {editingSavingsGoal ? "Update Goal" : "Add Goal"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Transaction Dialog */}
+        <Dialog open={showTransactionDialog} onOpenChange={setShowTransactionDialog}>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>
+                {editingTransaction ? "Edit Transaction" : "Add New Transaction"}
+              </DialogTitle>
+            </DialogHeader>
+            <div className="py-4 space-y-4">
+              <div>
+                <label htmlFor="transactionTitle" className="text-sm font-medium block mb-2">
+                  Title
+                </label>
+                <Input
+                  id="transactionTitle"
+                  value={transactionTitle}
+                  onChange={(e) => setTransactionTitle(e.target.value)}
+                  placeholder="e.g. Grocery Shopping"
+                />
+              </div>
+              <div>
+                <label htmlFor="transactionAmount" className="text-sm font-medium block mb-2">
+                  Amount ($)
+                </label>
+                <Input
+                  id="transactionAmount"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={transactionAmount}
+                  onChange={(e) => setTransactionAmount(e.target.value)}
+                  placeholder="0.00"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium block mb-2">
+                  Type
+                </label>
+                <div className="flex gap-4">
+                  <Button
+                    type="button"
+                    variant={transactionType === 'expense' ? 'default' : 'outline'}
+                    className={transactionType === 'expense' ? 'bg-finance-expense text-white' : ''}
+                    onClick={() => setTransactionType('expense')}
+                  >
+                    <ArrowUpDown className="mr-2 h-4 w-4" />
+                    Expense
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={transactionType === 'income' ? 'default' : 'outline'}
+                    className={transactionType === 'income' ? 'bg-finance-income text-white' : ''}
+                    onClick={() => setTransactionType('income')}
+                  >
+                    <DollarSign className="mr-2 h-4 w-4" />
+                    Income
+                  </Button>
+                </div>
+              </div>
+              <div>
+                <label htmlFor="transactionCategory" className="text-sm font-medium block mb-2">
+                  Category
+                </label>
+                <Input
+                  id="transactionCategory"
+                  value={transactionCategory}
+                  onChange={(e) => setTransactionCategory(e.target.value)}
+                  placeholder="e.g. Food, Salary, Shopping"
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowTransactionDialog(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleSaveTransaction}>
+                {editingTransaction ? "Update Transaction" : "Add Transaction"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+        
         {/* Manual Edit Buttons */}
         <div className="flex flex-wrap gap-3 mb-6">
           <Button
@@ -579,8 +927,30 @@ const Index = () => {
         
         {/* Bottom Row */}
         <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
-          <SavingsGoals goals={savingsGoals} />
-          <RecentTransactions transactions={transactions} />
+          <SavingsGoals 
+            goals={savingsGoals} 
+            onEdit={handleEditSavingsGoal}
+            onDelete={handleDeleteSavingsGoal}
+            onAddNew={handleAddSavingsGoal}
+          />
+          
+          <div className="col-span-3 relative">
+            <div className="absolute top-4 right-4 z-10">
+              <Button
+                size="sm"
+                onClick={handleAddTransaction}
+                className="bg-white hover:bg-gray-100 text-gray-800 border border-gray-200"
+              >
+                <Plus className="h-3.5 w-3.5 mr-1" />
+                Add Transaction
+              </Button>
+            </div>
+            <RecentTransactions 
+              transactions={transactions} 
+              onEdit={handleEditTransaction}
+              onDelete={handleDeleteTransaction}
+            />
+          </div>
         </div>
       </div>
     </Layout>

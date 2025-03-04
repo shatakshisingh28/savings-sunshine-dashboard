@@ -1,7 +1,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowDownLeft, ArrowUpRight, Coffee, CreditCard, ShoppingBag, Utensils, Smartphone } from 'lucide-react';
+import { ArrowDownLeft, ArrowUpRight, Coffee, CreditCard, ShoppingBag, Utensils, Smartphone, Edit, Trash } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -22,6 +23,8 @@ export interface Transaction {
 
 interface RecentTransactionsProps {
   transactions: Transaction[];
+  onEdit?: (transaction: Transaction) => void;
+  onDelete?: (transactionId: string) => void;
 }
 
 const categoryIcons: Record<string, React.ReactNode> = {
@@ -32,7 +35,11 @@ const categoryIcons: Record<string, React.ReactNode> = {
   default: <CreditCard className="h-4 w-4" />
 };
 
-const RecentTransactions: React.FC<RecentTransactionsProps> = ({ transactions }) => {
+const RecentTransactions: React.FC<RecentTransactionsProps> = ({ 
+  transactions, 
+  onEdit, 
+  onDelete 
+}) => {
   const [currentTime, setCurrentTime] = useState(Date.now());
   
   // Update time every minute to refresh relative timestamps
@@ -83,7 +90,32 @@ const RecentTransactions: React.FC<RecentTransactionsProps> = ({ transactions })
             </div>
           ) : (
             transactions.map((transaction) => (
-              <div key={transaction.id} className="flex items-center justify-between border-b border-border pb-3 last:border-0 last:pb-0 hover:bg-muted/30 p-2 rounded-md transition-colors">
+              <div key={transaction.id} className="flex items-center justify-between border-b border-border pb-3 last:border-0 last:pb-0 hover:bg-muted/30 p-2 rounded-md transition-colors group relative">
+                {(onEdit || onDelete) && (
+                  <div className="absolute right-2 top-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    {onEdit && (
+                      <Button 
+                        size="icon" 
+                        variant="ghost" 
+                        className="h-7 w-7" 
+                        onClick={() => onEdit(transaction)}
+                      >
+                        <Edit className="h-3.5 w-3.5" />
+                      </Button>
+                    )}
+                    {onDelete && (
+                      <Button 
+                        size="icon" 
+                        variant="ghost" 
+                        className="h-7 w-7 text-destructive" 
+                        onClick={() => onDelete(transaction.id)}
+                      >
+                        <Trash className="h-3.5 w-3.5" />
+                      </Button>
+                    )}
+                  </div>
+                )}
+                
                 <div className="flex items-center">
                   <div className={cn(
                     "w-9 h-9 rounded-full flex items-center justify-center mr-3",
