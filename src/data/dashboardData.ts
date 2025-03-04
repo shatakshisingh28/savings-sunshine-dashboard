@@ -141,4 +141,4 @@ export const recentTransactionsData: Transaction[] = [
 export const totalIncome = 5950;
 export const totalExpenses = 3500;
 export const totalSavings = 2450;
-export const totalBalance = 24850;
+export let totalBalance = 24850; // Changed to let so it can be modified

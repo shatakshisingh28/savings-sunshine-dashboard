@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import Layout from '@/components/Layout';
 import MetricCard from '@/components/MetricCard';
@@ -14,6 +13,8 @@ import AddSavingsGoal from '@/components/AddSavingsGoal';
 import UpdateSavingsProgress from '@/components/UpdateSavingsProgress';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { 
   ArrowUpDown, 
   DollarSign, 
@@ -22,7 +23,8 @@ import {
   Plus,
   Minus,
   LineChart,
-  Smartphone
+  Smartphone,
+  RotateCcw
 } from 'lucide-react';
 
 import { 
@@ -58,6 +60,33 @@ const Index = () => {
   const [showIncomeForm, setShowIncomeForm] = useState(false);
   const [showUpiForm, setShowUpiForm] = useState(false);
   const [showAddGoalForm, setShowAddGoalForm] = useState(false);
+  
+  // Reset balance dialog state
+  const [showBalanceDialog, setShowBalanceDialog] = useState(false);
+  const [newBalance, setNewBalance] = useState('');
+
+  // Function to handle balance reset/update
+  const handleBalanceReset = () => {
+    const balanceAmount = parseFloat(newBalance);
+    
+    if (isNaN(balanceAmount) || balanceAmount < 0) {
+      toast({
+        title: "Invalid amount",
+        description: "Please enter a valid positive number",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setTotalBalance(balanceAmount);
+    setShowBalanceDialog(false);
+    setNewBalance('');
+    
+    toast({
+      title: "Balance Updated",
+      description: `Total balance has been set to $${balanceAmount.toLocaleString()}`,
+    });
+  };
 
   // Function to add a new expense
   const handleAddExpense = (expense: {
@@ -296,15 +325,25 @@ const Index = () => {
         
         {/* Metrics Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-          <MetricCard 
-            title="Total Balance"
-            value={`$${totalBalance.toLocaleString()}`}
-            change="2.3% from last month"
-            isPositive={true}
-            icon={Wallet}
-            iconColor="bg-finance-accent"
-            className="animate-fade-up"
-          />
+          <div className="relative group">
+            <button 
+              onClick={() => setShowBalanceDialog(true)}
+              className="absolute top-2 right-2 p-1 rounded-full bg-gray-100 opacity-0 group-hover:opacity-100 transition-opacity"
+              aria-label="Reset balance"
+              title="Set balance manually"
+            >
+              <RotateCcw className="h-4 w-4 text-gray-500" />
+            </button>
+            <MetricCard 
+              title="Total Balance"
+              value={`$${totalBalance.toLocaleString()}`}
+              change="2.3% from last month"
+              isPositive={true}
+              icon={Wallet}
+              iconColor="bg-finance-accent"
+              className="animate-fade-up group-hover:shadow-md transition-all"
+            />
+          </div>
           <MetricCard 
             title="Monthly Income"
             value={`$${totalIncome.toLocaleString()}`}
@@ -334,6 +373,38 @@ const Index = () => {
           />
         </div>
 
+        {/* Balance Update Dialog */}
+        <Dialog open={showBalanceDialog} onOpenChange={setShowBalanceDialog}>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>Update Total Balance</DialogTitle>
+            </DialogHeader>
+            <div className="py-4">
+              <label htmlFor="balance" className="text-sm font-medium block mb-2">
+                Enter New Balance Amount ($)
+              </label>
+              <Input
+                id="balance"
+                type="number"
+                step="0.01"
+                min="0"
+                value={newBalance}
+                onChange={(e) => setNewBalance(e.target.value)}
+                placeholder="0.00"
+                className="col-span-3"
+              />
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowBalanceDialog(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleBalanceReset}>
+                Update Balance
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
         {/* Action Buttons */}
         <div className="flex flex-wrap gap-3 mb-6">
           <Button 
@@ -360,6 +431,13 @@ const Index = () => {
             variant={showAddGoalForm ? "default" : "outline"}>
             <PiggyBank className="mr-2 h-4 w-4" /> 
             {showAddGoalForm ? "Hide Goal Form" : "Add Savings Goal"}
+          </Button>
+          <Button
+            onClick={() => setShowBalanceDialog(true)}
+            variant="outline"
+            className="border-finance-accent text-finance-accent hover:bg-finance-accent/10">
+            <Wallet className="mr-2 h-4 w-4" />
+            Set Balance Manually
           </Button>
         </div>
         
